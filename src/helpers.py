@@ -10,6 +10,9 @@ class Vector(BaseModel):
     def distance(self, other: "Vector"):
         return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
 
+    def __sub__(self, other):
+        return Vector(x=self.x - other.x, y=self.y - other.y)
+
 
 class Position(Vector):
     x: int | float  # todo make it only float

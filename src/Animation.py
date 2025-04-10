@@ -7,6 +7,9 @@ import pygame
 from bootstrap import BG_COLOR, BOUNDARY_COLOR, HEIGHT, WIDTH
 from BouncingObject import BouncingCircle, BouncingObject
 from Boundary import BoundaryProtocol, CircleBoundary
+from GoalBoundary import GoalBoundary
+
+# from ExitZone import ExitZone
 from helpers import Position, Velocity
 
 
@@ -26,6 +29,8 @@ class AnimationManger:
         self.fps = fps
         self.objects: list[BouncingObject] = []
         self.boundaries: list[BoundaryProtocol] = []
+        self.goal_zones: list[GoalBoundary] = []
+        self.goal_scored = False
 
     def add_object(self, object: BouncingObject):
         self.objects.append(object)
@@ -33,9 +38,16 @@ class AnimationManger:
     def add_boundary(self, boundary: BoundaryProtocol):
         self.boundaries.append(boundary)
 
+    def add_goal_zone(self, goal_zone: GoalBoundary):
+        self.goal_zones.append(goal_zone)
+
     def update(self):
         for obj in self.objects:
             obj.update(self.boundaries, self.objects)
+            for zone in self.goal_zones:
+                if zone.check_goal(obj.position, obj.radius):
+                    self.goal_scored = True
+                    print("GOAL!")
 
     def draw(self):
         self.screen.fill(self.bg_color)
@@ -45,6 +57,8 @@ class AnimationManger:
 
         for obj in self.objects:
             obj.draw(self.screen)
+        for zone in self.goal_zones:
+            zone.draw(self.screen)
         pygame.display.flip()
 
     def handle_events(self) -> bool:
@@ -52,6 +66,8 @@ class AnimationManger:
             if event.type == pygame.QUIT:
                 return False
             if event.type == pygame.KEYDOWN:
+                return False
+            if self.goal_scored:
                 return False
         return True
 
@@ -89,11 +105,27 @@ if __name__ == "__main__":
         position=starting_position, radius=radius, image_path=str(ROOT / "logo.svg"), velocity=Velocity(x=0, y=0)
     )
     obj_2 = BouncingCircle(
-        position=starting_position, radius=radius, image_path=str(ROOT / "logo.svg"), velocity=Velocity(x=0, y=0)
+        position=Position(x=WIDTH / 2 - 30, y=HEIGHT / 2),
+        radius=radius,
+        image_path=str(ROOT / "logo.svg"),
+        velocity=Velocity(x=0, y=0),
     )
+    goal_zone = GoalBoundary
     # Move the window to your second monitor
     # Adjust these values for your monitor setup
     anim.add_object(obj_1)
     anim.add_object(obj_2)
     anim.add_boundary(boundary)
+    goal_width = 60
+    goal_height = 40
+    goal_x = WIDTH // 2 - 200  # Based on your 200px radius circular boundary
+    goal_y = HEIGHT // 2 - goal_height // 2
+    goal_zone = GoalBoundary(
+        position=Position(x=goal_x, y=goal_y),
+        width=goal_width,
+        height=goal_height,
+        color=(25, 123, 45),  # White goal
+    )
+    anim.add_goal_zone(goal_zone)
+    # anim.add_boundary(exit_zone)
     anim.run()

@@ -5,7 +5,7 @@ from typing import Protocol
 
 import pygame.draw
 
-from bootstrap import GRAVITY, OBJECT_COLOR
+from bootstrap import BOUNCE_DAMPENING, GRAVITY, OBJECT_COLOR
 from Boundary import BoundaryProtocol
 from helpers import Position, Velocity
 
@@ -14,6 +14,7 @@ class BouncingObject(Protocol):
     object_id: uuid.UUID
     position: Position
     velocity: Velocity
+    initial_position: Position
 
     @abstractmethod
     def update(self, boundaries: list[BoundaryProtocol], objects: list["BouncingObject"]): ...
@@ -28,6 +29,7 @@ class BouncingCircle(BouncingObject):
         self.position = position
         self.velocity = velocity
         self.object_id = uuid.uuid4()
+        self.initial_position = position
 
     def update(self, boundaries: list[BoundaryProtocol], objects: list["BouncingCircle"]):
         self.velocity.y += GRAVITY
@@ -42,7 +44,6 @@ class BouncingCircle(BouncingObject):
 
                 self.velocity.x = self.velocity.x - 2 * dot_product * normal_position.x
                 self.velocity.y = self.velocity.y - 2 * dot_product * normal_position.y
-                BOUNCE_DAMPENING = 0.9
                 # Apply dampening
                 self.velocity.x *= BOUNCE_DAMPENING
                 self.velocity.y *= BOUNCE_DAMPENING
@@ -64,7 +65,15 @@ class BouncingCircle(BouncingObject):
             if self.object_id != object.object_id:
                 # distance between this object and object is smaller than sum of radiuses then bounce
                 if self.position.distance(object.position) < self.radius + object.radius:
-                    print("touched")
+                    delta_pos = self.position - object.position
+                    delta_vel = self.velocity - object.velocity
+                    distance_squared = delta_pos.x**2 + delta_pos.y**2
+                    if distance_squared > 0:  # Avoid division by zero
+                        dot_product = (delta_vel.x * delta_pos.x + delta_vel.y * delta_pos.y) / distance_squared
+                        self.velocity.x -= dot_product * delta_pos.x
+                        self.velocity.y -= dot_product * delta_pos.y
+                        object.velocity.x += dot_product * delta_pos.x
+                        object.velocity.y += dot_product * delta_pos.y
         self.position += self.velocity
 
         # self.position.x += self.position.x_speed

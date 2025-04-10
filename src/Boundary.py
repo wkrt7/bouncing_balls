@@ -24,8 +24,6 @@ class CircleBoundary(BoundaryProtocol):
         self.color = color
         self.thickness = thicnkess
 
-    def check_collision(self, object) -> bool: ...
-
     def collision_check(self, position: Position) -> bool:
         dx = position.x - self.center.x
         dy = position.y - self.center.y
