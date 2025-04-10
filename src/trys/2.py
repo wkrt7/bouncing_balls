@@ -1,10 +1,11 @@
-import pygame
-import sys
-import random
 import math
-from abc import ABC, abstractmethod
-from typing import Protocol, Tuple, List, Optional
 import os
+import random
+import sys
+from abc import ABC, abstractmethod
+from typing import List, Optional, Protocol, Tuple
+
+import pygame
 
 # Initialize pygame
 pygame.init()
@@ -40,11 +41,7 @@ class CircleBoundary:
         self.radius = radius
         self.color = color
         self.thickness = 6  # Border thickness
-        self.glow_colors = [
-            (230, 0, 115),  # Pink
-            (252, 185, 0),  # Gold
-            (64, 224, 208)  # Turquoise
-        ]
+        self.glow_colors = [(230, 0, 115), (252, 185, 0), (64, 224, 208)]  # Pink  # Gold  # Turquoise
         self.glow_thickness = 15
         self.glow_radius_offset = 5
         self.glow_index = 0
@@ -80,7 +77,7 @@ class CircleBoundary:
         glow_color = (
             int(color1[0] * (1 - glow_blend) + color2[0] * glow_blend),
             int(color1[1] * (1 - glow_blend) + color2[1] * glow_blend),
-            int(color1[2] * (1 - glow_blend) + color2[2] * glow_blend)
+            int(color1[2] * (1 - glow_blend) + color2[2] * glow_blend),
         )
 
         # Draw multiple concentric circles for glow effect
@@ -92,24 +89,17 @@ class CircleBoundary:
                 (*glow_color, glow_alpha),
                 self.center,
                 self.radius + self.glow_radius_offset + i * 3,
-                self.glow_thickness - i * 2
+                self.glow_thickness - i * 2,
             )
             surface.blit(glow_surf, (0, 0))
 
         # Draw main boundary circle
-        pygame.draw.circle(
-            surface,
-            self.color,
-            self.center,
-            self.radius,
-            self.thickness
-        )
+        pygame.draw.circle(surface, self.color, self.center, self.radius, self.thickness)
 
 
 # Bouncing Object Class
 class BouncingObject:
-    def __init__(self, image_path: str, position: Tuple[float, float],
-                 velocity: Tuple[float, float], size: int = 100):
+    def __init__(self, image_path: str, position: Tuple[float, float], velocity: Tuple[float, float], size: int = 100):
         self.original_image = pygame.image.load(image_path)
         self.original_image = pygame.transform.scale(self.original_image, (size, size))
 
@@ -133,7 +123,7 @@ class BouncingObject:
         self.glow_colors = [
             (230, 0, 115, 150),  # Pink with alpha
             (252, 185, 0, 150),  # Gold with alpha
-            (64, 224, 208, 150)  # Turquoise with alpha
+            (64, 224, 208, 150),  # Turquoise with alpha
         ]
         self.current_glow = random.choice(self.glow_colors)
 
@@ -147,10 +137,7 @@ class BouncingObject:
             self.trail.pop(0)
 
         # Update position
-        new_position = [
-            self.position[0] + self.velocity[0],
-            self.position[1] + self.velocity[1]
-        ]
+        new_position = [self.position[0] + self.velocity[0], self.position[1] + self.velocity[1]]
 
         # Check for collision with each boundary
         for boundary in boundaries:
@@ -159,10 +146,7 @@ class BouncingObject:
                 normal = boundary.get_normal(self.position)
 
                 # Calculate reflection vector
-                dot_product = (
-                        self.velocity[0] * normal[0] +
-                        self.velocity[1] * normal[1]
-                )
+                dot_product = self.velocity[0] * normal[0] + self.velocity[1] * normal[1]
 
                 self.velocity[0] = self.velocity[0] - 2 * dot_product * normal[0]
                 self.velocity[1] = self.velocity[1] - 2 * dot_product * normal[1]
@@ -204,32 +188,16 @@ class BouncingObject:
                 color_with_alpha = (*self.current_glow[:3], alpha // 3)
 
                 if width > 0:
-                    pygame.draw.line(
-                        surface,
-                        color_with_alpha,
-                        points[i],
-                        points[i + 1],
-                        width
-                    )
+                    pygame.draw.line(surface, color_with_alpha, points[i], points[i + 1], width)
 
         # Draw glow
         glow_surf = pygame.Surface((self.size * 2, self.size * 2), pygame.SRCALPHA)
-        pygame.draw.circle(
-            glow_surf,
-            self.current_glow,
-            (self.size, self.size),
-            self.size // 2 + 10
-        )
-        surface.blit(
-            glow_surf,
-            (int(self.position[0] - self.size), int(self.position[1] - self.size))
-        )
+        pygame.draw.circle(glow_surf, self.current_glow, (self.size, self.size), self.size // 2 + 10)
+        surface.blit(glow_surf, (int(self.position[0] - self.size), int(self.position[1] - self.size)))
 
         # Draw rotated image
         rotated_image = pygame.transform.rotate(self.image, self.rotation)
-        new_rect = rotated_image.get_rect(
-            center=(int(self.position[0]), int(self.position[1]))
-        )
+        new_rect = rotated_image.get_rect(center=(int(self.position[0]), int(self.position[1])))
         surface.blit(rotated_image, new_rect.topleft)
 
 
@@ -291,10 +259,7 @@ class AnimationManager:
 
         # Save frame if recording
         if self.recording:
-            pygame.image.save(
-                self.screen,
-                f"{self.output_folder}/frame_{self.frame_count:04d}.png"
-            )
+            pygame.image.save(self.screen, f"{self.output_folder}/frame_{self.frame_count:04d}.png")
             self.frame_count += 1
 
             # Stop recording after max frames
@@ -324,9 +289,7 @@ def create_bouncing_animation(image_path: str) -> None:
 
     # Create circular boundary
     boundary = CircleBoundary(
-        center=(WIDTH // 2, HEIGHT // 2),
-        radius=min(WIDTH, HEIGHT) // 2 - 100,
-        color=(255, 255, 255)  # White border
+        center=(WIDTH // 2, HEIGHT // 2), radius=min(WIDTH, HEIGHT) // 2 - 100, color=(255, 255, 255)  # White border
     )
     manager.add_boundary(boundary)
 
@@ -335,15 +298,12 @@ def create_bouncing_animation(image_path: str) -> None:
         # Random position inside the boundary
         angle = random.uniform(0, 2 * math.pi)
         distance = random.uniform(0, boundary.radius * 0.7)
-        position = (
-            boundary.center[0] + math.cos(angle) * distance,
-            boundary.center[1] + math.sin(angle) * distance
-        )
+        position = (boundary.center[0] + math.cos(angle) * distance, boundary.center[1] + math.sin(angle) * distance)
 
         # Random initial velocity
         velocity = (
             random.uniform(-MAX_INITIAL_VELOCITY, MAX_INITIAL_VELOCITY),
-            random.uniform(-MAX_INITIAL_VELOCITY, MAX_INITIAL_VELOCITY)
+            random.uniform(-MAX_INITIAL_VELOCITY, MAX_INITIAL_VELOCITY),
         )
 
         # Random size
@@ -377,14 +337,7 @@ if __name__ == "__main__":
         pygame.draw.circle(smiley, (0, 0, 0), (img_size * 2 // 3, img_size // 3), eye_radius)
 
         # Draw smile
-        pygame.draw.arc(
-            smiley,
-            (0, 0, 0),
-            (img_size // 4, img_size // 4, img_size // 2, img_size // 2),
-            0,
-            math.pi,
-            3
-        )
+        pygame.draw.arc(smiley, (0, 0, 0), (img_size // 4, img_size // 4, img_size // 2, img_size // 2), 0, math.pi, 3)
 
         # Save image
         pygame.image.save(smiley, image_path)
