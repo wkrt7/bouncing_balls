@@ -44,7 +44,8 @@ class AnimationManger:
         for bound in self.boundaries:
             bound.update()
             if bound.out_of_boundaries:
-                print("Goal")
+                return False
+        return True
 
     def draw(self):
         self.screen.fill(self.bg_color)
@@ -80,7 +81,7 @@ class AnimationManger:
         self._validate()
         while self.running:
             self.running = self.handle_events()
-            self.update()
+            self.running = self.update()
             self.draw()
             self.clock.tick(self.fps)
             # print("Running")
